@@ -22,8 +22,6 @@ apply plugin: 'com.wynprice.cursemaven'
 apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/master/generic/markdown-git-changelog.gradle'
 
 def ENV = System.getenv()
-// version = ENV.BUILD_NUMBER ? "${mod_version}.${ENV.BUILD_NUMBER}" : "${mod_version}.custom"
-// group = package_group
 archivesBaseName = mod_name
 
 sourceCompatibility = targetCompatibility = "1.8"
@@ -51,17 +49,11 @@ repositories {
 
 dependencies {
 	implementation 'com.github.Rushmore75:FTB-Library-Legacy:8e431ae'
-	// implementation 'com.github.Rushmore75:KubeJS:4b3232f'
-	// implementation 'com.github.Rushmore75:Aurora:a4ed06d'
+	implementation 'com.google.code.gson:gson:2.7'
 
 	// provided files(
-	// 	// "/home/oliver/Documents/code_projects/java/FTB-Library-Legacy/build/libs/FTBLib-5.4.7.0.jar",
-	// 	// "/home/oliver/Documents/code_projects/java/Aurora/build/libs/Aurora-1.0.0.custom.jar",
-	// 	// "/home/oliver/Documents/code_projects/java/KubeJS/build/libs/KubeJS-forge-1.12.2-1.1.0.custom.jar",
-	// 	// vv these are just downloaded from curseforge, just the normal mods vv
-	// 	"/home/oliver/Documents/code_projects/java/FTB-Utilities/lib/iChunUtil-1.12.2-7.2.2.jar",
-	// 	"/home/oliver/Documents/code_projects/java/FTB-Utilities/lib/chiselsandbits-14.33.jar"
-	// 	)
+		// "/home/oliver/Documents/code_projects/java/FTB-Utilities/build/libs/FTBUtilities-5.4.1.custom.jar",
+	// )
 
 }
 

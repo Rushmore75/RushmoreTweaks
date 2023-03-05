@@ -5,10 +5,10 @@
   "description": "A mod for integrating various parts of Minecraft with the web.",
   "version": "1.0.0",
   "mcversion": "1.12.2",
-  "url": "https://github.com/sa-shiro/Minecraft-Forge-1.12.2-BaseMod",
+  "url": "https://github.com/Rushmore75/RushmoreTweaks",
   "updateUrl": "",
   "authorList": ["Rushmore75 (Oliver Atkinson)"],
-  "credits": "Rushmore75",
+  "credits": "Rushmore75, sa-shiro",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
