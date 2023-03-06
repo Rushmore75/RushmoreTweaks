@@ -1,7 +1,5 @@
 package com.basemod.base.util;
 
-import java.util.UUID;
-
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.Universe;
 
