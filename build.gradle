@@ -51,9 +51,9 @@ dependencies {
 	implementation 'com.github.Rushmore75:FTB-Library-Legacy:8e431ae'
 	implementation 'com.google.code.gson:gson:2.7'
 
-	// provided files(
-		// "/home/oliver/Documents/code_projects/java/FTB-Utilities/build/libs/FTBUtilities-5.4.1.custom.jar",
-	// )
+	provided files(
+		"/home/oliver/Documents/code_projects/java/FTB-Utilities/build/libs/FTBUtilities-5.4.1.custom.jar",
+	)
 
 }
 

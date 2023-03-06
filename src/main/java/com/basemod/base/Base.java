@@ -3,6 +3,7 @@ package com.basemod.base;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -59,6 +60,8 @@ public class Base {
         }
     }
 
+    public static Logger getLogger() { return logger; } 
+
     @Instance
     public static Base instance;
     private static Logger logger; // used to print messages to our console output
@@ -72,6 +75,7 @@ public class Base {
     @EventHandler
     public static void postInit(FMLPostInitializationEvent event) {
         checkServer();
+        ClientCommandHandler.instance.registerCommand(new CmdGetUniverse());
     }
     
     @EventHandler

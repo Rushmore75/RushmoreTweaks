@@ -16,10 +16,12 @@ import com.basemod.base.util.SentPlayer;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.Universe;
 
-import net.minecraftforge.client.event.ClientChatEvent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+// import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.event.ServerChatEvent;
 
-// import com.feed_the_beast.ftblib.lib.net.*; // contains message sending methods
+import com.feed_the_beast.ftblib.lib.net.MessageBase; // contains message sending methods
 
 @EventBusSubscriber
 public class DiscordRP {
@@ -35,7 +37,9 @@ public class DiscordRP {
     }
 
     @SubscribeEvent
-    public static void format(ServerChatEvent event) {
+    public static void chatEvent(ServerChatEvent event) {
+        // !NOTE! Doesn't grab things like advancements
+
         if (!Base.serverUp) { return; }
 
         // perhaps a bit convoluted, but ultimately it should streamline things
@@ -55,6 +59,10 @@ public class DiscordRP {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+    }
+    
+    public static void printDiscordMessage() {
+        Universe.get().server.getPlayerList().sendMessage(new TextComponentString("b"));
     }
 
 }
