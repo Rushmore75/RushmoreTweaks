@@ -1,5 +1,7 @@
 package com.basemod.base;
 
+import com.basemod.base.event.DiscordRP;
+import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -81,11 +83,16 @@ public class Base {
     @EventHandler
     public static void serverStart(FMLServerStartingEvent event) {
         logger.info("Server starting...");
+        // start discord transport
+        new DiscordRP(Universe.get()).start();
+        // chat.start();
     }
     
     @EventHandler
     public static void preStopping(FMLServerStoppingEvent event) {
         logger.info("Server stopping...");
+        // chat.wait();
+        // stop discord transport
     }
 
 

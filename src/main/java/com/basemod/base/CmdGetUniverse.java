@@ -21,7 +21,6 @@ public class CmdGetUniverse extends CmdBase {
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        // TODO Make this copyable from in-game
         String uuid = Universe.get().getUUID().toString();
         TextComponentString msg = new TextComponentString(uuid+" (Hover Me)");
         msg.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString("Click to put into chat bar, then CTRL+A, CTRL+C to copy.")));

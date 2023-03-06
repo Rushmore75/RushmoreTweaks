@@ -8,14 +8,18 @@ import com.feed_the_beast.ftblib.lib.data.Universe;
 public class SentPlayer {
     String uuid;
     String playerName;
-    final UUID universeUuid;
+    final String universeUuid;
     
 
     private static int fakePlayerCount = 0;
 
+    public String getName() {
+        return playerName;
+    }
+
     public SentPlayer(ForgePlayer player, Universe universe) {
 
-        universeUuid = universe.getUUID();
+        universeUuid = universe.getUUID().toString();
         try {
             playerName = player.getName();
             uuid = player.getId().toString();
