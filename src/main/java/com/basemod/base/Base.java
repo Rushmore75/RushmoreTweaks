@@ -88,6 +88,10 @@ public class Base {
         // The universe doesn't get loaded till FMLServerStartedEvent
         // while the universe *instance* is loaded on FMLServerAboutToStartEvent.
         // This is probably why I'm getting uuid issues.
+        // Call order:
+        // FMLServerAboutToStartEvent <- Universe Instance loaded
+        // FMLServerStartingEvent <- where we are rn
+        // FMLServerStartedEvent <- Universe data loaded from disk
         new DiscordRP(Universe.get()).start();
         // chat.start();
     }
