@@ -84,7 +84,9 @@ public class Base {
     public static void serverStart(FMLServerStartingEvent event) {
         logger.info("Server starting...");
         // start discord transport
+        // FIXME
         // The universe doesn't get loaded till FMLServerStartedEvent
+        // while the universe *instance* is loaded on FMLServerAboutToStartEvent.
         // This is probably why I'm getting uuid issues.
         new DiscordRP(Universe.get()).start();
         // chat.start();
