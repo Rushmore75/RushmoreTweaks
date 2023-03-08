@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
@@ -81,19 +82,17 @@ public class Base {
     }
     
     @EventHandler
-    public static void serverStart(FMLServerStartingEvent event) {
+    public static void serverStarted(FMLServerStartedEvent event) {
         logger.info("Server starting...");
-        // start discord transport
-        // FIXME
-        // The universe doesn't get loaded till FMLServerStartedEvent
-        // while the universe *instance* is loaded on FMLServerAboutToStartEvent.
-        // This is probably why I'm getting uuid issues.
-        // Call order:
+        // Event order:
         // FMLServerAboutToStartEvent <- Universe Instance loaded
-        // FMLServerStartingEvent <- where we are rn
+        // FMLServerStartingEvent 
         // FMLServerStartedEvent <- Universe data loaded from disk
-        new DiscordRP(Universe.get()).start();
+
+        // Start discord transport
+        new DiscordRP().start();
         // chat.start();
+
     }
     
     @EventHandler

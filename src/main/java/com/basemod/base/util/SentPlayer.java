@@ -7,12 +7,17 @@ public class SentPlayer {
     String uuid;
     String playerName;
     final String universeUuid;
-    
-
     private static int fakePlayerCount = 0;
+
 
     public String getName() {
         return playerName;
+    }
+
+    public SentPlayer(String name, Universe universe) {
+        universeUuid = universe.getUUID().toString();
+        playerName = name;
+        uuid = universeUuid;
     }
 
     public SentPlayer(ForgePlayer player, Universe universe) {

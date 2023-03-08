@@ -16,6 +16,7 @@ import org.apache.http.impl.client.HttpClients;
 
 
 import com.basemod.base.Base;
+import com.basemod.base.util.PlayerMsg;
 import com.basemod.base.util.SentPlayer;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.Universe;
@@ -28,23 +29,11 @@ import net.minecraftforge.event.ServerChatEvent;
 @EventBusSubscriber
 public class DiscordRP extends Thread {
    
-    private boolean running = false;
-    private Universe universe;
+    private boolean running = false; // This can probably go away
 
-    public DiscordRP(Universe universe) {
-        this.universe = universe;
-    }
-
-    static class PlayerMsg {
-        SentPlayer player;
-        String msg;
-
-        PlayerMsg(SentPlayer player, String msg) {
-            this.player = player;
-            this.msg = msg;
-        }
-    }
-
+    //===================================================
+    //                  Start Events 
+    //===================================================
     @SubscribeEvent
     public static void chatEvent(ServerChatEvent event) {
         // !NOTE! Doesn't grab things like advancements
@@ -58,9 +47,19 @@ public class DiscordRP extends Thread {
         sendMessageToDiscord(mp);
     }
     
-    // need central function because message events fire from
-    // multiple places. 
-    public static void sendMessageToDiscord(PlayerMsg pMsg) {
+    //===================================================
+    //                  Stop Events 
+    //===================================================
+
+
+
+
+    
+    /**
+     * Push a message to the Discord server.
+     * @param pMsg The player message. (UUID will be check!)
+     */
+    private static void sendMessageToDiscord(PlayerMsg pMsg) {
         String json = Base.gson.toJson(pMsg);
 
         try {
@@ -77,7 +76,10 @@ public class DiscordRP extends Thread {
 		}
     }
 
-    public static void sendMessageToMinecraft(PlayerMsg pMsg) {
+    /**
+     * Push a message to minecraft.
+     */
+    private static void sendMessageToMinecraft(PlayerMsg pMsg) {
 
         TextComponentString msg = new TextComponentString(
             "["+pMsg.player.getName()+"] "+pMsg.msg
@@ -86,28 +88,36 @@ public class DiscordRP extends Thread {
         Universe.get().server.getPlayerList().sendMessage(msg);
     }
 
+    /**
+     * Invokes both `sendMessageToMinecraft()` and
+     * `sendMessageToDiscord()` sequentially.
+     */
+    public static void sendEverywhere(PlayerMsg pMsg) {
+        sendMessageToDiscord(pMsg);
+        sendMessageToMinecraft(pMsg);
+    }
+    
+    /**
+    * Subscribe to the queue of Discord messages.
+    * Note: This method will block!
+    */
     public void readDiscordMessages() {
         
         try {
-            HttpGet get = new HttpGet(Base.siteUri+"listenforchats/"+universe.getUUID().toString());
+            HttpGet get = new HttpGet(Base.siteUri+"listenforchats/"+Universe.get().getUUID().toString());
             CloseableHttpClient client = HttpClients.createDefault();
             CloseableHttpResponse response = client.execute(get);
 
-            // FIXME this universe is different than the one the command returns
-            Universe.get().server.getPlayerList().sendMessage(new TextComponentString("loaded"));
-           
             // will block
             InputStream read = response.getEntity().getContent();
             byte[] buffer = new byte[1024];
             while (running) {
                 int bytes = read.read(buffer);
-                Base.getLogger().info(bytes);
                 if (bytes > 1) {
                     StringBuilder sb = new StringBuilder();
                     for (byte b : buffer) {
                         sb.append((char) b);
                     }
-                    // sb.trimToSize();
                     // Clean up the front of the string
                     int index = sb.indexOf(":");
                     sb.delete(0, index+1);
@@ -117,7 +127,7 @@ public class DiscordRP extends Thread {
                     try {
                         PlayerMsg playerMsg = Base.gson.fromJson(msg, PlayerMsg.class);
                         if (playerMsg == null) {
-                            Base.getLogger().error("PlayerMsg creation failed!");
+                            Base.getLogger().warn("[Non-Fatal]: PlayerMsg creation failed!");
                             continue;
                         }
                         sendMessageToMinecraft(playerMsg);
