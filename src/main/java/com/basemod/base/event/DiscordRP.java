@@ -32,9 +32,6 @@ public class DiscordRP extends Thread {
    
     private boolean running = false; // This can probably go away
 
-    private static List<String> messageQueue = new ArrayList<>();
-    private static Long lastMessageFlush = System.currentTimeMillis();
-
     //===================================================
     //                  Watch Events 
     //===================================================
@@ -95,31 +92,8 @@ public class DiscordRP extends Thread {
     private static void sendMessageToMinecraft(PlayerMsg pMsg) {
 
         String msg =  "[§3"+pMsg.player.getName()+"§r] "+pMsg.msg;
-        messageQueue.add(msg);
+        Universe.get().server.getPlayerList().sendMessage(new TextComponentString(msg));
         
-    }
-
-    /**
-     * Pushes all the messages added with sendMessageToMinecraft() 
-     * to the in-game chat.
-     */
-    private static void flushMessages() {
-        // Why would we bother with an empty queue?
-        if (messageQueue.isEmpty()) { return; }
-        // Has 1/2 second passed? 
-        if ((lastMessageFlush + 500) > System.currentTimeMillis()) { return; }
-
-        StringBuilder sb = new StringBuilder();
-
-        for (String string : messageQueue) {
-            sb.append(string);
-            sb.append("\n");
-        }
-        Universe.get().server.getPlayerList().sendMessage(new TextComponentString(sb.toString()));
-
-        // Reset values.
-        messageQueue = new ArrayList<>();
-        lastMessageFlush = System.currentTimeMillis();
     }
 
     /**
@@ -145,11 +119,11 @@ public class DiscordRP extends Thread {
 
             // will block
             InputStream read = response.getEntity().getContent();
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[1024];            
             while (running) {
                 // Read into buffer
                 int bytes = read.read(buffer);
-                if (bytes > 1) {
+                if (bytes > 0) {
                     StringBuilder sb = new StringBuilder();
                     for (byte b : buffer) {
                         sb.append((char) b);
@@ -171,8 +145,9 @@ public class DiscordRP extends Thread {
                     } catch (JsonSyntaxException e) {
                         Base.getLogger().entry(e.getStackTrace());
                     }
+                    // Get a new buffer to read into
+                    buffer = new byte[1024];
                 }
-                flushMessages();
             }
             
             client.close();
