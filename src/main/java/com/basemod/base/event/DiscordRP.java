@@ -14,7 +14,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-
 import com.basemod.base.Base;
 import com.basemod.base.util.PlayerMsg;
 import com.basemod.base.util.SentPlayer;
@@ -46,7 +45,7 @@ public class DiscordRP extends Thread {
         PlayerMsg mp = new PlayerMsg(new SentPlayer(player, Universe.get()), event.getMessage()); 
         sendMessageToDiscord(mp);
     }
-    
+    // TODO add death events & achievements
     //===================================================
     //                  Stop Events 
     //===================================================
@@ -82,7 +81,7 @@ public class DiscordRP extends Thread {
     private static void sendMessageToMinecraft(PlayerMsg pMsg) {
 
         TextComponentString msg = new TextComponentString(
-            "["+pMsg.player.getName()+"] "+pMsg.msg
+            "[§3"+pMsg.player.getName()+"§r] "+pMsg.msg
         );
         // FIXME i'm being rate limited or something
         Universe.get().server.getPlayerList().sendMessage(msg);
@@ -93,8 +92,9 @@ public class DiscordRP extends Thread {
      * `sendMessageToDiscord()` sequentially.
      */
     public static void sendEverywhere(PlayerMsg pMsg) {
-        sendMessageToDiscord(pMsg);
         sendMessageToMinecraft(pMsg);
+        if (!Base.serverUp) { return; }
+        sendMessageToDiscord(pMsg);
     }
     
     /**
