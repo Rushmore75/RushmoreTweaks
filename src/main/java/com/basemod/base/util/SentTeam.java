@@ -17,16 +17,16 @@ public class SentTeam {
     final Map<SentPlayer, EnumTeamStatus> players;
 
 
-    public SentTeam(ForgeTeam team, Universe universe) {
-        this.owner = new SentPlayer(team.owner, universe);
+    public SentTeam(ForgeTeam team) {
+        this.owner = new SentPlayer(team.owner);
         this.id = team.getId();
-        this.universeUuid = universe.getUUID();
+        this.universeUuid = Universe.get().getUUID();
 
         Map<SentPlayer, EnumTeamStatus> m = new HashMap<>();
             
         for (ForgePlayer player : team.players.keySet()) {
             EnumTeamStatus status = team.players.get(player); 
-            m.put(new SentPlayer(player, universe), status);
+            m.put(new SentPlayer(player), status);
         }
         this.players=m;
     }

@@ -1,8 +1,5 @@
 package com.basemod.base.event;
 
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -17,12 +14,15 @@ import org.apache.http.impl.client.HttpClients;
 import com.basemod.base.Base;
 import com.basemod.base.util.PlayerMsg;
 import com.basemod.base.util.SentPlayer;
-import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.google.gson.JsonSyntaxException;
+import com.ibm.icu.text.MessageFormat;
 
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.entity.player.AdvancementEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 
 @EventBusSubscriber
@@ -31,34 +31,42 @@ public class DiscordRP extends Thread {
     private boolean running = false; // This can probably go away
 
     //===================================================
-    //                  Start Events 
+    //                  Watch Events 
     //===================================================
     @SubscribeEvent
     public static void chatEvent(ServerChatEvent event) {
-        // !NOTE! Doesn't grab things like advancements
 
-        if (!Base.serverUp) { return; }
-
-        // perhaps a bit convoluted, but ultimately it should streamline things
-        // on the server side.
-        ForgePlayer player = Universe.get().getPlayer(event.getPlayer());
-        PlayerMsg mp = new PlayerMsg(new SentPlayer(player, Universe.get()), event.getMessage()); 
+        PlayerMsg mp = new PlayerMsg(new SentPlayer(event.getPlayer()), event.getMessage()); 
         sendMessageToDiscord(mp);
+        
     }
-    // TODO add death events & achievements
+
+    @SubscribeEvent
+    public static void advancementEvent(AdvancementEvent event) {
+
+        String message = MessageFormat.format(
+            "{0} achieved {1}",
+            event.getEntityPlayer().getName(),
+            event.getAdvancement().getDisplayText().getUnformattedText()
+            );
+
+        sendMessageToDiscord(new PlayerMsg(new SentPlayer("Server"), message));
+    }
+
+
+
+    // TODO add death events & join/leave messages
     //===================================================
-    //                  Stop Events 
+    //                  Send Messages 
     //===================================================
 
-
-
-
-    
     /**
      * Push a message to the Discord server.
      * @param pMsg The player message. (UUID will be check!)
      */
     private static void sendMessageToDiscord(PlayerMsg pMsg) {
+        if (!Base.serverUp) { return; }
+        
         String json = Base.gson.toJson(pMsg);
 
         try {
@@ -93,7 +101,6 @@ public class DiscordRP extends Thread {
      */
     public static void sendEverywhere(PlayerMsg pMsg) {
         sendMessageToMinecraft(pMsg);
-        if (!Base.serverUp) { return; }
         sendMessageToDiscord(pMsg);
     }
     
@@ -102,7 +109,8 @@ public class DiscordRP extends Thread {
     * Note: This method will block!
     */
     public void readDiscordMessages() {
-        
+        if (!Base.serverUp) { return; }
+
         try {
             HttpGet get = new HttpGet(Base.siteUri+"listenforchats/"+Universe.get().getUUID().toString());
             CloseableHttpClient client = HttpClients.createDefault();
@@ -145,10 +153,7 @@ public class DiscordRP extends Thread {
 
     @Override
     public void run() {
-        // It would just cause errors to try
-        // and read discord messages without
-        // the bot actually being up.
-        if (!Base.serverUp) { return; }
+        
         running = true;
         readDiscordMessages();
     }

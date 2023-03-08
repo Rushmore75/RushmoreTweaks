@@ -13,10 +13,10 @@ public class UpdateServer {
         if (player == null) {
             this.player = null; 
         } else {
-            this.player = new SentPlayer(player, Universe.get());
+            this.player = new SentPlayer(player);
         }
 
-        this.team = new SentTeam(team, Universe.get());
+        this.team = new SentTeam(team);
         this.status = status;
     }
     
