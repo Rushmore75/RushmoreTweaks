@@ -2,7 +2,6 @@ package com.basemod.base.util;
 
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.ForgeTeam;
-import com.feed_the_beast.ftblib.lib.data.Universe;
 
 public class UpdateServer {
     public final SentPlayer player;

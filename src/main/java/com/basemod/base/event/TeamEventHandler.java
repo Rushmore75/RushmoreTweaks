@@ -1,7 +1,5 @@
 package com.basemod.base.event;
 
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -18,16 +16,13 @@ import com.basemod.base.Base;
 import com.basemod.base.util.PlayerMsg;
 import com.basemod.base.util.UpdateServer;
 import com.basemod.base.util.SentPlayer;
-import com.basemod.base.util.SentTeam;
 import com.basemod.base.util.UpdateServer.Status;
-import com.feed_the_beast.ftblib.events.team.ForgeTeamCreatedEvent;
 import com.feed_the_beast.ftblib.events.team.ForgeTeamDeletedEvent;
 import com.feed_the_beast.ftblib.events.team.ForgeTeamOwnerChangedEvent;
 import com.feed_the_beast.ftblib.events.team.ForgeTeamPlayerJoinedEvent;
 import com.feed_the_beast.ftblib.events.team.ForgeTeamPlayerLeftEvent;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.ForgeTeam;
-import com.feed_the_beast.ftblib.lib.data.Universe;
 
 @EventBusSubscriber
 public class TeamEventHandler {

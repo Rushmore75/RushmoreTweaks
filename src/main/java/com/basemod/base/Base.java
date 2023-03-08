@@ -1,7 +1,6 @@
 package com.basemod.base;
 
 import com.basemod.base.event.DiscordRP;
-import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -13,7 +12,6 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -15,8 +15,10 @@ public class PlayerMsg {
         this.msg = msg;
         this.player = new SentPlayer(player);
     }
-    
-    // TODO make method to send message as server
+   
+    public static PlayerMsg sendAsServer(String msg) {
+        return new PlayerMsg(new SentPlayer("Server"), msg);
+    }
 
 }
 

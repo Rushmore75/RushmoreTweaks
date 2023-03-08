@@ -2,8 +2,6 @@ package com.basemod.base.event;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -20,11 +18,14 @@ import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.google.gson.JsonSyntaxException;
 import com.ibm.icu.text.MessageFormat;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
 
 @EventBusSubscriber
@@ -52,12 +53,47 @@ public class DiscordRP extends Thread {
             event.getAdvancement().getDisplayText().getUnformattedText()
             );
 
-        sendMessageToDiscord(new PlayerMsg(new SentPlayer("Server"), message));
+        sendMessageToDiscord(PlayerMsg.sendAsServer(message));
+    }
+    
+    @SubscribeEvent
+    public static void playerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+
+        String message = MessageFormat.format(
+            "{0} joined the game.",
+            event.player.getName()
+            );
+
+        sendMessageToDiscord(PlayerMsg.sendAsServer(message));
+    }
+    
+    @SubscribeEvent
+    public static void playerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+
+        String message = MessageFormat.format(
+            "{0} left the game.",
+            event.player.getName()
+            );
+
+        sendMessageToDiscord(PlayerMsg.sendAsServer(message));
     }
 
+    @SubscribeEvent
+    public static void playerDeath(LivingDeathEvent event) {
+        
+        if (!(event.getEntity() instanceof EntityPlayer)) { return; }
+        EntityPlayer player = (EntityPlayer) event.getEntity();
 
+        String message = MessageFormat.format(
+            "{0} died from {1}",
+            player.getName(),
+            event.getSource().damageType
+            );
 
-    // TODO add death events & join/leave messages
+        sendMessageToDiscord(PlayerMsg.sendAsServer(message));
+ 
+    }
+
     //===================================================
     //                  Send Messages 
     //===================================================
@@ -86,8 +122,7 @@ public class DiscordRP extends Thread {
     }
 
     /**
-     * Push a message to minecraft. They won't actually be send until
-     * flushMessages() is called.
+     * Push a message to minecraft.
      */
     private static void sendMessageToMinecraft(PlayerMsg pMsg) {
 
@@ -143,7 +178,7 @@ public class DiscordRP extends Thread {
                         // time passage
                         sendMessageToMinecraft(playerMsg);
                     } catch (JsonSyntaxException e) {
-                        Base.getLogger().entry(e.getStackTrace());
+                        Base.getLogger().error(e.getStackTrace());
                     }
                     // Get a new buffer to read into
                     buffer = new byte[1024];
