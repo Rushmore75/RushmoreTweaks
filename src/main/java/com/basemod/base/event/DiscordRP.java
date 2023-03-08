@@ -18,7 +18,9 @@ import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.google.gson.JsonSyntaxException;
 import com.ibm.icu.text.MessageFormat;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -47,9 +49,13 @@ public class DiscordRP extends Thread {
     @SubscribeEvent
     public static void advancementEvent(AdvancementEvent event) {
 
+        if (event.getAdvancement().getDisplayText().toString().contains("recipes")) { return; }
+
+
         String message = MessageFormat.format(
             "{0} achieved {1}",
             event.getEntityPlayer().getName(),
+            
             event.getAdvancement().getDisplayText().getUnformattedText()
             );
 
@@ -83,11 +89,15 @@ public class DiscordRP extends Thread {
         
         if (!(event.getEntity() instanceof EntityPlayer)) { return; }
         EntityPlayer player = (EntityPlayer) event.getEntity();
+       
+
+        Entity cause = event.getSource().getTrueSource();
+        String name = cause == null ? event.getSource().getDamageType() : cause.getName();
 
         String message = MessageFormat.format(
-            "{0} died from {1}",
+            "{0} was killed by {1}",
             player.getName(),
-            event.getSource().damageType
+            name 
             );
 
         sendMessageToDiscord(PlayerMsg.sendAsServer(message));
