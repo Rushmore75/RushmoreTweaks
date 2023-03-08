@@ -2,6 +2,8 @@ package com.basemod.base.event;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -29,6 +31,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class DiscordRP extends Thread {
    
     private boolean running = false; // This can probably go away
+
+    private static List<String> messageQueue = new ArrayList<>();
+    private static Long lastMessageFlush = System.currentTimeMillis();
 
     //===================================================
     //                  Watch Events 
@@ -84,15 +89,37 @@ public class DiscordRP extends Thread {
     }
 
     /**
-     * Push a message to minecraft.
+     * Push a message to minecraft. They won't actually be send until
+     * flushMessages() is called.
      */
     private static void sendMessageToMinecraft(PlayerMsg pMsg) {
 
-        TextComponentString msg = new TextComponentString(
-            "[§3"+pMsg.player.getName()+"§r] "+pMsg.msg
-        );
-        // FIXME i'm being rate limited or something
-        Universe.get().server.getPlayerList().sendMessage(msg);
+        String msg =  "[§3"+pMsg.player.getName()+"§r] "+pMsg.msg;
+        messageQueue.add(msg);
+        
+    }
+
+    /**
+     * Pushes all the messages added with sendMessageToMinecraft() 
+     * to the in-game chat.
+     */
+    private static void flushMessages() {
+        // Why would we bother with an empty queue?
+        if (messageQueue.isEmpty()) { return; }
+        // Has 1/2 second passed? 
+        if ((lastMessageFlush + 500) > System.currentTimeMillis()) { return; }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (String string : messageQueue) {
+            sb.append(string);
+            sb.append("\n");
+        }
+        Universe.get().server.getPlayerList().sendMessage(new TextComponentString(sb.toString()));
+
+        // Reset values.
+        messageQueue = new ArrayList<>();
+        lastMessageFlush = System.currentTimeMillis();
     }
 
     /**
@@ -120,6 +147,7 @@ public class DiscordRP extends Thread {
             InputStream read = response.getEntity().getContent();
             byte[] buffer = new byte[1024];
             while (running) {
+                // Read into buffer
                 int bytes = read.read(buffer);
                 if (bytes > 1) {
                     StringBuilder sb = new StringBuilder();
@@ -130,7 +158,6 @@ public class DiscordRP extends Thread {
                     int index = sb.indexOf(":");
                     sb.delete(0, index+1);
                     String msg = sb.toString().trim();
-                    Base.getLogger().info(msg);
 
                     try {
                         PlayerMsg playerMsg = Base.gson.fromJson(msg, PlayerMsg.class);
@@ -138,11 +165,14 @@ public class DiscordRP extends Thread {
                             Base.getLogger().warn("[Non-Fatal]: PlayerMsg creation failed!");
                             continue;
                         }
+                        // might need to build a queue that empties based on
+                        // time passage
                         sendMessageToMinecraft(playerMsg);
                     } catch (JsonSyntaxException e) {
                         Base.getLogger().entry(e.getStackTrace());
                     }
                 }
+                flushMessages();
             }
             
             client.close();
