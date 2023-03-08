@@ -9,7 +9,6 @@ public class SentPlayer {
     final String universeUuid;
     private static int fakePlayerCount = 0;
 
-
     public String getName() {
         return playerName;
     }
@@ -36,7 +35,6 @@ public class SentPlayer {
             playerName = "fakeplayer_"+fakePlayerCount;
             fakePlayerCount++;
         }
-
     }
 }
 
