@@ -14,6 +14,10 @@ import org.apache.http.impl.client.HttpClients;
 import com.basemod.base.Base;
 import com.basemod.base.util.PlayerMsg;
 import com.basemod.base.util.SentPlayer;
+import com.basemod.base.util.UpdateServer;
+import com.basemod.base.util.UpdateServer.PlayerUpdate;
+import com.basemod.base.util.UpdateServer.Status;
+import com.feed_the_beast.ftblib.lib.data.ForgeTeam;
 import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.google.gson.JsonSyntaxException;
 import com.ibm.icu.text.MessageFormat;
@@ -26,6 +30,10 @@ import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
@@ -65,23 +73,26 @@ public class DiscordRP extends Thread {
     @SubscribeEvent
     public static void playerLogin(PlayerEvent.PlayerLoggedInEvent event) {
 
-        String message = MessageFormat.format(
-            "{0} joined the game.",
-            event.player.getName()
-            );
-
-        sendMessageToDiscord(PlayerMsg.sendAsServer(message));
+        sendEventToDiscord(
+            new UpdateServer(
+                new PlayerUpdate(
+                    Universe.get().getPlayer(event.player),null
+                    ),
+                null, Status.PLAYER_LOGIN
+            )
+        );
     }
     
     @SubscribeEvent
     public static void playerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-
-        String message = MessageFormat.format(
-            "{0} left the game.",
-            event.player.getName()
-            );
-
-        sendMessageToDiscord(PlayerMsg.sendAsServer(message));
+        // FIXME the universe is gone by the time this event happens...
+        sendEventToDiscord(
+            new UpdateServer(
+                null,
+                null,
+                Status.PLAYER_LOGOUT
+            )
+        );
     }
 
     @SubscribeEvent
@@ -89,25 +100,47 @@ public class DiscordRP extends Thread {
         
         if (!(event.getEntity() instanceof EntityPlayer)) { return; }
         EntityPlayer player = (EntityPlayer) event.getEntity();
-       
 
         Entity cause = event.getSource().getTrueSource();
-        String name = cause == null ? event.getSource().getDamageType() : cause.getName();
+        String name = cause == null ? event.getSource().getDamageType() : cause.getName(); 
 
-        String message = MessageFormat.format(
-            "{0} was killed by {1}",
-            player.getName(),
-            name 
-            );
-
-        sendMessageToDiscord(PlayerMsg.sendAsServer(message));
- 
+        sendEventToDiscord(
+            new UpdateServer(
+                new PlayerUpdate(
+                    Universe.get().getPlayer(player),null
+                ),
+                new PlayerUpdate(
+                    new SentPlayer(name), null
+                ),
+                Status.PLAYER_DEATH
+            )
+        );
     }
+
+    @EventHandler
+    public static void serverStart(FMLServerStartedEvent event) {
+        sendEventToDiscord(
+            new UpdateServer(null, null, Status.SERVER_START)
+        );
+    } 
+
+    @EventHandler
+    public static void serverStop(FMLServerStoppedEvent event) {
+        sendEventToDiscord(
+            new UpdateServer(null, null, Status.SERVER_STOP)
+        );
+    } 
 
     //===================================================
     //                  Send Messages 
     //===================================================
 
+    public static void sendEventToDiscord(UpdateServer update) {
+        if (!Base.serverUp) { return; }
+        
+        String json = Base.gson.toJson(update);
+        sendToDiscord(json, "sendevent/"+Universe.get().getUUID().toString());
+   }
     /**
      * Push a message to the Discord server.
      * @param pMsg The player message. (UUID will be check!)
@@ -116,10 +149,13 @@ public class DiscordRP extends Thread {
         if (!Base.serverUp) { return; }
         
         String json = Base.gson.toJson(pMsg);
+        sendToDiscord(json, "sentmessage");
+    }
 
+    private static void sendToDiscord(String json, String path) {
         try {
             // TODO this async
-			HttpPost post = new HttpPost(Base.siteUri+"sentmessage");
+			HttpPost post = new HttpPost(Base.siteUri+path);
 			post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
 
 			CloseableHttpClient client = HttpClients.createDefault();
@@ -134,21 +170,13 @@ public class DiscordRP extends Thread {
     /**
      * Push a message to minecraft.
      */
-    private static void sendMessageToMinecraft(PlayerMsg pMsg) {
+    public static void sendMessageToMinecraft(PlayerMsg pMsg) {
 
         String msg =  "[§3"+pMsg.player.getName()+"§r] "+pMsg.msg;
         Universe.get().server.getPlayerList().sendMessage(new TextComponentString(msg));
         
     }
 
-    /**
-     * Invokes both `sendMessageToMinecraft()` and
-     * `sendMessageToDiscord()` sequentially.
-     */
-    public static void sendEverywhere(PlayerMsg pMsg) {
-        sendMessageToMinecraft(pMsg);
-        sendMessageToDiscord(pMsg);
-    }
     
     /**
     * Subscribe to the queue of Discord messages.

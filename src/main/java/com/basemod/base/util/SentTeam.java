@@ -18,7 +18,8 @@ public class SentTeam {
 
 
     public SentTeam(ForgeTeam team) {
-        this.owner = new SentPlayer(team.owner);
+        // The only time owner should be null is if the team is fake, like "singleplayer"
+        this.owner = team.owner == null ? new SentPlayer("Server") : new SentPlayer(team.owner);
         this.id = team.getId();
         this.universeUuid = Universe.get().getUUID();
 

@@ -89,17 +89,7 @@ public class Base {
 
         // Start discord transport
         new DiscordRP().start();
-        // chat.start();
 
     }
     
-    @EventHandler
-    public static void preStopping(FMLServerStoppingEvent event) {
-        logger.info("Server stopping...");
-        // chat.wait();
-        // stop discord transport
-    }
-
-
-
 }

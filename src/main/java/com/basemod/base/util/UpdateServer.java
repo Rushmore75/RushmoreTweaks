@@ -1,33 +1,57 @@
 package com.basemod.base.util;
 
+import javax.annotation.Nullable;
+
+import com.feed_the_beast.ftblib.events.team.ForgeTeamEvent;
+import com.feed_the_beast.ftblib.events.team.ForgeTeamPlayerJoinedEvent;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.ForgeTeam;
 
 public class UpdateServer {
-    public final SentPlayer player;
-    public final SentTeam team;
     public final Status status;
+    public final PlayerUpdate receiver;
+    public final PlayerUpdate sender;
     
-    public UpdateServer(ForgePlayer player, ForgeTeam team, Status status) {
-        if (player == null) {
-            this.player = null; 
-        } else {
-            this.player = new SentPlayer(player);
-        }
+    public UpdateServer(PlayerUpdate sender, PlayerUpdate receiver, Status status) {
+        
+        this.sender = sender;
+        this.receiver = receiver;
 
-        this.team = new SentTeam(team);
         this.status = status;
     }
     
+    public static class PlayerUpdate {
+        public final SentPlayer player;
+        public final SentTeam team;
+        
+        public PlayerUpdate(@Nullable ForgePlayer player, @Nullable ForgeTeam team) {
+            
+            this.player = player == null ? null : new SentPlayer(player); 
+            this.team = team == null ? null : new SentTeam(team);            
+
+        }
+        
+        public PlayerUpdate(SentPlayer player, SentTeam team) {
+            this.player = player;
+            this.team = team;
+        }
+    }
+    
+    // TODO, the sending of each event should be more streamlined
+    
     public enum Status {
-        /** Promoted / Demoted */
+        // Team
         RANK,
-        /** Leaves a team */
         LEAVE,
-        /** Joins a team */
         JOIN,
-        /** The team disbanded */
-        DISBAND
+        DISBAND,
+        
+        SERVER_STOP,
+        SERVER_START,
+
+        PLAYER_LOGIN,
+        PLAYER_LOGOUT,
+        PLAYER_DEATH,
 
     } 
 
