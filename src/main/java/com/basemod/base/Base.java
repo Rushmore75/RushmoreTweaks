@@ -83,6 +83,7 @@ public class Base {
     public static void serverStarted(FMLServerStartedEvent event) {
         logger.info("Server starting...");
         // TODO @Subscribe(priority=EventPriority.LOWEST)
+        // what is subscribe vs event handler?
         
         // Event order:
         // FMLServerAboutToStartEvent <- Universe Instance loaded
