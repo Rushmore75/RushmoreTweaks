@@ -82,6 +82,8 @@ public class Base {
     @EventHandler
     public static void serverStarted(FMLServerStartedEvent event) {
         logger.info("Server starting...");
+        // TODO @Subscribe(priority=EventPriority.LOWEST)
+        
         // Event order:
         // FMLServerAboutToStartEvent <- Universe Instance loaded
         // FMLServerStartingEvent 
