@@ -11,7 +11,6 @@ import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,7 +88,7 @@ public class Base {
         // FMLServerAboutToStartEvent <- Universe Instance loaded
         // FMLServerStartingEvent 
         // FMLServerStartedEvent <- Universe data loaded from disk
-
+    
         // Start discord transport
         new DiscordRP().start();
 

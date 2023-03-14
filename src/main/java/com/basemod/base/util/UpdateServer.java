@@ -2,8 +2,6 @@ package com.basemod.base.util;
 
 import javax.annotation.Nullable;
 
-import com.feed_the_beast.ftblib.events.team.ForgeTeamEvent;
-import com.feed_the_beast.ftblib.events.team.ForgeTeamPlayerJoinedEvent;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.ForgeTeam;
 

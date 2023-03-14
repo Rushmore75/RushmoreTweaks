@@ -2,6 +2,7 @@ package com.basemod.base.event;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ForkJoinPool;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -17,14 +18,12 @@ import com.basemod.base.util.SentPlayer;
 import com.basemod.base.util.UpdateServer;
 import com.basemod.base.util.UpdateServer.PlayerUpdate;
 import com.basemod.base.util.UpdateServer.Status;
-import com.feed_the_beast.ftblib.lib.data.ForgeTeam;
 import com.feed_the_beast.ftblib.lib.data.Universe;
 import com.google.gson.JsonSyntaxException;
 import com.ibm.icu.text.MessageFormat;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -33,13 +32,14 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
 
 @EventBusSubscriber
 public class DiscordRP extends Thread {
+
+    private static String universeUuid = null;
    
     private boolean running = false; // This can probably go away
 
@@ -85,10 +85,9 @@ public class DiscordRP extends Thread {
     
     @SubscribeEvent
     public static void playerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        // FIXME the universe is gone by the time this event happens...
         sendEventToDiscord(
             new UpdateServer(
-                null,
+                new PlayerUpdate(new SentPlayer(event.player), null),
                 null,
                 Status.PLAYER_LOGOUT
             )
@@ -138,10 +137,16 @@ public class DiscordRP extends Thread {
     public static void sendEventToDiscord(UpdateServer update) {
         if (!Base.serverUp) { return; }
         
+        if (universeUuid == null) {
+            // Don't spam the universe call, might have performance improvements
+            // but is here so npes don't happen
+            universeUuid = Universe.get().getUUID().toString();
+        }
         String json = Base.gson.toJson(update);
-        sendToDiscord(json, "sendevent/"+Universe.get().getUUID().toString());
+        sendToDiscord(json, "sendevent/"+universeUuid);
    }
-    /**
+    
+   /**
      * Push a message to the Discord server.
      * @param pMsg The player message. (UUID will be check!)
      */
@@ -153,18 +158,20 @@ public class DiscordRP extends Thread {
     }
 
     private static void sendToDiscord(String json, String path) {
-        try {
-            // TODO this async
-			HttpPost post = new HttpPost(Base.siteUri+path);
-			post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
+        
+		HttpPost post = new HttpPost(Base.siteUri+path);
+		post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
+		CloseableHttpClient client = HttpClients.createDefault();
 
-			CloseableHttpClient client = HttpClients.createDefault();
-			client.execute(post);
-			client.close();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        // Do the http request async
+        ForkJoinPool.commonPool().execute(() -> {
+            try {
+                client.execute(post);
+                client.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     /**

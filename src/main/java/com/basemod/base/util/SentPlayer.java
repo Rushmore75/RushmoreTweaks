@@ -29,7 +29,6 @@ public class SentPlayer {
 
     public SentPlayer(ForgePlayer player) {
         universeUuid = Universe.get().getUUID().toString();
-		// FIXME npe here
         playerName = player.getName();
         uuid = player.getId().toString();
     }

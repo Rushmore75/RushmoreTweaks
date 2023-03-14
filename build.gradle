@@ -9,15 +9,15 @@ buildscript {
 	}
 	dependencies {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-		classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.1.0'
-		classpath 'com.wynprice.cursemaven:CurseMaven:1.2.+'
+		// classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.1.0'
+		// classpath 'com.wynprice.cursemaven:CurseMaven:1.2.+'
 	}
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'com.matthewprenger.cursegradle'
+// apply plugin: 'com.matthewprenger.cursegradle'
 apply plugin: 'maven'
-apply plugin: 'com.wynprice.cursemaven'
+// apply plugin: 'com.wynprice.cursemaven'
 
 apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/master/generic/markdown-git-changelog.gradle'
 
@@ -51,6 +51,8 @@ repositories {
 dependencies {
 	implementation 'com.github.Rushmore75:FTB-Library-Legacy:8e431ae'
 	implementation 'com.google.code.gson:gson:2.7'
+	
+	implementation 'org.apache.httpcomponents:httpclient:4.5.14'
 
 	provided files(
 		"/home/oliver/Documents/code_projects/java/FTB-Utilities/build/libs/FTBUtilities-5.4.1.custom.jar",
