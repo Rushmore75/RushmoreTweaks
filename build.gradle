@@ -38,35 +38,31 @@ minecraft {
 	version = "${mc_version}-${forge_version}"
 	runDir = "run"
 	mappings = "${mappings_version}"
+}
 
-	// replace "0.0.0.ftbutilities", project.version
-	// replaceIn "${mod_reference}"
+configurations.all {
+	transitive = false
 }
 
 repositories {
 	mavenLocal()
-	// mavenCentral()
+	mavenCentral()
 	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
 
-	implementation ('com.github.Rushmore75:FTB-Library-Legacy:8e431ae') {
-		transitive = false;	
-	}
-	implementation ('com.google.code.gson:gson:2.7') {
-		transitive = false;	
-	}
+	implementation ('com.github.Rushmore75:FTB-Library-Legacy:8e431ae')
+	implementation ('com.google.code.gson:gson:2.7')
+//	compile ('org.apache.httpcomponents:httpclient:4.5.14')
+	provided files("/home/oliver/Documents/code_projects/java/FTB-Utilities/build/libs/FTBUtilities-5.4.1.custom.jar")
 
-	// build using ./gradlew shadowJar
-	compile ('org.apache.httpcomponents:httpclient:4.5.14') {
-		transitive = true;
-	}
+}
 
-	provided files(
-		"/home/oliver/Documents/code_projects/java/FTB-Utilities/build/libs/FTBUtilities-5.4.1.custom.jar",
-	)
-
+shadowJar {
+  dependencies {
+//    include(dependency('org.apache.httpcomponents:httpclient:4.5.14'))
+  }
 }
 
 processResources {
