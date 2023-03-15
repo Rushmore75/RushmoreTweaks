@@ -159,6 +159,8 @@ public class DiscordRP extends Thread {
 
     private static void sendToDiscord(String json, String path) {
         
+        
+
 		HttpPost post = new HttpPost(Base.siteUri+path);
 		post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
 		CloseableHttpClient client = HttpClients.createDefault();
