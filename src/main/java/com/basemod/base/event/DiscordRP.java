@@ -7,14 +7,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ForkJoinPool;
 
-// import org.apache.http.client.methods.CloseableHttpResponse;
-// import org.apache.http.client.methods.HttpGet;
-// import org.apache.http.client.methods.HttpPost;
-// import org.apache.http.entity.ContentType;
-// import org.apache.http.entity.StringEntity;
-// import org.apache.http.impl.client.CloseableHttpClient;
-// import org.apache.http.impl.client.HttpClients;
-
 import com.basemod.base.Base;
 import com.basemod.base.util.PlayerMsg;
 import com.basemod.base.util.SentPlayer;
@@ -149,6 +141,7 @@ public class DiscordRP extends Thread {
      */
     private static void sendMessageToDiscord(PlayerMsg pMsg) {
         if (!Base.serverUp) {
+            Base.getLogger().warn("Server isn't up.");
             return;
         }
 
@@ -219,7 +212,6 @@ public class DiscordRP extends Thread {
                 // Read into buffer
                 do {
                     bytes = read.read(buffer);
-                    Base.getLogger().info("Read: " + bytes);
                     for (Byte i : buffer) { sb.append((char) i.byteValue()); }
                     // clean buffer
                     buffer = new byte[1024];
@@ -232,15 +224,17 @@ public class DiscordRP extends Thread {
                         index = sb.indexOf("data:");
                     }
 
+                    String msg = sb.toString().trim();
+                    if (msg.equals(":")) {
+                        // The server sends these as heartbeats (or something.)
+                        continue;
+                    }
+                    Base.getLogger().warn("'"+msg+"'");
+
                     try {
-                        String msg = sb.toString().trim();
-                        Base.getLogger().warn(msg);
+                        // FIXME the player's name doesn't get deseialized.
                         PlayerMsg playerMsg = Base.gson.fromJson(msg, PlayerMsg.class);
-                        if (playerMsg == null) {
-                            Base.getLogger().warn("[Non-Fatal]: PlayerMsg creation failed!");
-                            Base.getLogger().warn(msg);
-                            continue;
-                        }
+                        Base.getLogger().info(playerMsg.toString());
                         sendMessageToMinecraft(playerMsg);
                     } catch (JsonSyntaxException e) { Base.getLogger().error(e.getCause()); }
                 }
