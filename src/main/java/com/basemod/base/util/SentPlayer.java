@@ -14,9 +14,9 @@ public class SentPlayer {
         return playerName;
     }
 
-    public SentPlayer(String name) {
+    public SentPlayer(String playerName) {
         universeUuid = Universe.get().getUUID().toString();
-        playerName = name;
+        this.playerName = playerName;
         uuid = universeUuid;
     }
 
@@ -28,9 +28,9 @@ public class SentPlayer {
     }
 
     public SentPlayer(ForgePlayer player) {
-        universeUuid = Universe.get().getUUID().toString();
-        playerName = player.getName();
         uuid = player.getId().toString();
+        playerName = player.getName();
+        universeUuid = Universe.get().getUUID().toString();
     }
 }
 

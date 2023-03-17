@@ -4,6 +4,7 @@ import com.basemod.base.event.DiscordRP;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import net.minecraft.command.ServerCommandManager;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -11,14 +12,17 @@ import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+// import org.apache.http.client.methods.CloseableHttpResponse;
+// import org.apache.http.client.methods.HttpGet;
+// import org.apache.http.impl.client.CloseableHttpClient;
+// import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = Base.MOD_ID, name = Base.NAME, version = Base.VERSION)
@@ -35,22 +39,21 @@ public class Base {
     
     public static void checkServer() {
          try {
-            HttpGet get = new HttpGet(siteUri+"version");
-            CloseableHttpClient client = HttpClients.createDefault();
-            CloseableHttpResponse response = client.execute(get);
+            URL url = new URL(siteUri+"version");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
             
-            InputStream res = response.getEntity().getContent();
-
+            InputStream res = con.getInputStream();
             int b = 0;
             StringBuilder sb = new StringBuilder();
             while ((b = res.read()) != -1) {
                 sb.append((char)b);
             }
-            
+            res.close(); 
+
             logger.info(sb.toString());
             // TODO finish version check
 
-            client.close();
         } catch (IOException e) {
             serverUp = false;
             logger.warn("Unable to connect to external server, this pretty much invalidates the mod.");
@@ -75,7 +78,12 @@ public class Base {
     @EventHandler
     public static void postInit(FMLPostInitializationEvent event) {
         checkServer();
-        ClientCommandHandler.instance.registerCommand(new CmdGetUniverse());
+        // ClientCommandHandler.instance.registerCommand(new CmdGetUniverse());
+    }
+   
+    @EventHandler
+    public static void onServerStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new CmdGetUniverse());
     }
     
     @EventHandler
