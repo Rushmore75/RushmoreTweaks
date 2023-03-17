@@ -17,10 +17,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-// import org.apache.http.client.methods.CloseableHttpResponse;
-// import org.apache.http.client.methods.HttpGet;
-// import org.apache.http.impl.client.CloseableHttpClient;
-// import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = Base.MOD_ID, name = Base.NAME, version = Base.VERSION)

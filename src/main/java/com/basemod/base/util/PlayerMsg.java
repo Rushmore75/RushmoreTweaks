@@ -1,5 +1,7 @@
 package com.basemod.base.util;
 
+import com.basemod.base.Base;
+
 import net.minecraft.entity.player.EntityPlayer;
 
 public class PlayerMsg {
@@ -20,5 +22,9 @@ public class PlayerMsg {
         return new PlayerMsg(new SentPlayer("Server"), msg);
     }
 
+    @Override
+    public String toString() {
+        return Base.gson.toJson(this);
+    }
 }
 
