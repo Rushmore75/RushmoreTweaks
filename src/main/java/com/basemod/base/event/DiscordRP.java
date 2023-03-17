@@ -1,6 +1,5 @@
 package com.basemod.base.event;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,7 +22,6 @@ import com.basemod.base.util.UpdateServer;
 import com.basemod.base.util.UpdateServer.PlayerUpdate;
 import com.basemod.base.util.UpdateServer.Status;
 import com.feed_the_beast.ftblib.lib.data.Universe;
-import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.ibm.icu.text.MessageFormat;
 
