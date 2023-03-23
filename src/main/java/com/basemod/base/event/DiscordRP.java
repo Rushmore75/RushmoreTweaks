@@ -229,11 +229,12 @@ public class DiscordRP extends Thread {
                         // The server sends these as heartbeats (or something.)
                         continue;
                     }
-                    Base.getLogger().warn("'"+msg+"'");
+                    Base.getLogger().warn(msg);
 
                     try {
                         // FIXME the player's name doesn't get deseialized.
                         PlayerMsg playerMsg = Base.gson.fromJson(msg, PlayerMsg.class);
+
                         Base.getLogger().info(playerMsg.toString());
                         sendMessageToMinecraft(playerMsg);
                     } catch (JsonSyntaxException e) { Base.getLogger().error(e.getCause()); }
