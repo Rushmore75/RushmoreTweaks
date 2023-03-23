@@ -22,7 +22,9 @@ import org.apache.logging.log4j.Logger;
 @Mod(modid = Base.MOD_ID, name = Base.NAME, version = Base.VERSION)
 public class Base {
 
-    public final static Gson gson = new GsonBuilder().create();
+    public final static Gson gson = new GsonBuilder()
+        .serializeNulls()
+        .create();
     public final static String siteUri = "http://127.0.0.1:8000/";
     public static final String MOD_ID = "rushmoretweaks";
     public static final String NAME = "Rushmore Tweaks";
