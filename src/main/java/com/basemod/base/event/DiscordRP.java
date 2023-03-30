@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.concurrent.ForkJoinPool;
 
 import com.basemod.base.Base;
+import com.basemod.base.CmdGetUniverse;
 import com.basemod.base.util.PlayerMsg;
 import com.basemod.base.util.SentPlayer;
 import com.basemod.base.util.UpdateServer;
@@ -20,22 +21,25 @@ import com.ibm.icu.text.MessageFormat;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLConstructionEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
-@EventBusSubscriber
+@Mod.EventBusSubscriber(modid = Base.MOD_ID)
 public class DiscordRP extends Thread {
 
     private static String universeUuid = null;
-
-    private boolean running = false; // This can probably go away
+    private static boolean serverUp = true;
 
     // ===================================================
     // Watch Events
@@ -103,25 +107,12 @@ public class DiscordRP extends Thread {
                         Status.PLAYER_DEATH));
     }
 
-    @EventHandler
-    public static void serverStart(FMLServerStartedEvent event) {
-        Base.getLogger().info("Server starting, releasing message.");
-        sendEventToDiscord(
-                new UpdateServer(null, null, Status.SERVER_START));
-    }
-
-    @EventHandler
-    public static void serverStop(FMLServerStoppedEvent event) {
-        sendEventToDiscord(
-                new UpdateServer(null, null, Status.SERVER_STOP));
-    }
-
     // ===================================================
     // Send Messages
     // ===================================================
 
     public static void sendEventToDiscord(UpdateServer update) {
-        if (!Base.serverUp) {
+        if (!serverUp) {
             return;
         }
 
@@ -140,7 +131,7 @@ public class DiscordRP extends Thread {
      * @param pMsg The player message. (UUID will be check!)
      */
     private static void sendMessageToDiscord(PlayerMsg pMsg) {
-        if (!Base.serverUp) {
+        if (!serverUp) {
             Base.getLogger().warn("Server isn't up.");
             return;
         }
@@ -191,64 +182,86 @@ public class DiscordRP extends Thread {
      * Note: This method will block!
      */
     public void readDiscordMessages() {
-        if (!Base.serverUp) {
+        if (!serverUp) {
             return;
         }
-
+        InputStream read = null; 
         try {
             URL url = new URL(Base.siteUri + "listenforchats/" + Universe.get().getUUID().toString());
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
+            read = con.getInputStream();
+        } catch (IOException e) { e.printStackTrace(); }
 
-            // BufferedInputStream read = new BufferedInputStream(con.getInputStream());
-            InputStream read = con.getInputStream();
-
-            // will block
-            while (running) {
-                byte[] buffer = new byte[1024];
-                int bytes = 0;
-                StringBuilder sb = new StringBuilder();
-
+        if (read == null) {
+            Base.getLogger().error("Reading from webserver failed");
+            return;
+        }
+        // will block
+        while (true) {
+            byte[] buffer = new byte[1024];
+            int bytes = 0;
+            StringBuilder sb = new StringBuilder();
+            do {
                 // Read into buffer
-                do {
-                    bytes = read.read(buffer);
-                    for (Byte i : buffer) { sb.append((char) i.byteValue()); }
-                    // clean buffer
-                    buffer = new byte[1024];
-                } while (bytes > 2);
+                try { bytes = read.read(buffer); } catch (IOException e) { e.printStackTrace(); }
+                
+                for (Byte i : buffer) { sb.append((char) i.byteValue()); }
+                // clean buffer
+                buffer = new byte[1024];
+            } while (bytes > 2);
 
-                if (bytes > 0) {
-                    int index = sb.indexOf("data:");
-                    while (index!=-1) {
-                        sb.delete(index, index+5);
-                        index = sb.indexOf("data:");
-                    }
-
-                    String msg = sb.toString().trim();
-                    if (msg.equals(":")) {
-                        // The server sends these as heartbeats (or something.)
-                        continue;
-                    }
-                    Base.getLogger().warn(msg);
-
-                    try {
-                        // FIXME the player's name doesn't get deseialized.
-                        PlayerMsg playerMsg = Base.gson.fromJson(msg, PlayerMsg.class);
-
-                        Base.getLogger().info(playerMsg.toString());
-                        sendMessageToMinecraft(playerMsg);
-                    } catch (JsonSyntaxException e) { Base.getLogger().error(e.getCause()); }
+            if (bytes > 0) {
+                int index = sb.indexOf("data:");
+                while (index!=-1) {
+                    sb.delete(index, index+5);
+                    index = sb.indexOf("data:");
                 }
+                String msg = sb.toString().trim();
+                if (msg.equals(":")) {
+                    // The server sends these as heartbeats (or something.)
+                    continue;
+                }
+
+                Base.getLogger().warn(msg);
+                try {
+                    // FIXME the player's name doesn't get deseialized.
+                    PlayerMsg playerMsg = Base.gson.fromJson(msg, PlayerMsg.class);
+                    Base.getLogger().info(playerMsg.toString());
+                    sendMessageToMinecraft(playerMsg);
+                } catch (JsonSyntaxException e) { Base.getLogger().error(e.getCause()); }
             }
-            read.close();
+        }
+    }
+
+    public static void checkServer() {
+         try {
+            URL url = new URL(Base.siteUri+"version");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            
+            InputStream res = con.getInputStream();
+            int b = 0;
+            StringBuilder sb = new StringBuilder();
+            while ((b = res.read()) != -1) {
+                sb.append((char)b);
+            }
+            res.close(); 
+
+            Base.getLogger().info(sb.toString());
+            // TODO finish version check
+
         } catch (IOException e) {
-            e.printStackTrace();
+            serverUp = false;
+            Base.getLogger().warn("Unable to connect to external server, this pretty much invalidates the mod.");
+        }       
+        if (serverUp) {
+            Base.getLogger().info("Connected to server!");
         }
     }
 
     @Override
     public void run() {
-        running = true;
         readDiscordMessages();
     }
 
